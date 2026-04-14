@@ -1,0 +1,70 @@
+import { fetchApi } from '../lib/apiClient';
+import type { 
+  PaginationQuery, 
+  ApiGetManyResponse, 
+  ApiGetOneResponse, 
+  ApiStatusResponse,
+  CustomerModel,
+  DriverModel,
+  CompanyModel
+} from '../types/admin';
+
+/* ==============================================================
+   Customers
+============================================================== */
+export const getCustomers = (query: PaginationQuery) => {
+  const params = new URLSearchParams({
+    pageNum: query.pageNum.toString(),
+    pageSize: query.pageSize.toString(),
+  });
+  if (query.term) params.append('term', query.term);
+  return fetchApi<ApiGetManyResponse<CustomerModel>>(`/customers?${params}`);
+};
+
+export const getCustomer = (id: string) => fetchApi<ApiGetOneResponse<CustomerModel>>(`/customers/${id}`);
+export const updateCustomer = (id: string, data: Partial<CustomerModel>) => fetchApi<ApiStatusResponse>(`/customers/${id}`, 'PUT', data);
+export const deleteCustomer = (id: string) => fetchApi<ApiStatusResponse>(`/customers/${id}`, 'DELETE');
+
+
+/* ==============================================================
+   Drivers
+============================================================== */
+export const getDriver = (id: string) => fetchApi<ApiGetOneResponse<DriverModel>>(`/drivers/${id}`);
+export const getDrivers = (query: PaginationQuery) => {
+  const params = new URLSearchParams({
+    pageNum: query.pageNum.toString(),
+    pageSize: query.pageSize.toString(),
+  });
+  if (query.term) params.append('term', query.term);
+  return fetchApi<ApiGetManyResponse<DriverModel>>(`/drivers?${params}`);
+};
+export const getDriversByCompany = (companyId: string, query: PaginationQuery) => {
+  const params = new URLSearchParams({
+    pageNum: query.pageNum.toString(),
+    pageSize: query.pageSize.toString(),
+  });
+  if (query.term) params.append('term', query.term);
+  return fetchApi<ApiGetManyResponse<DriverModel>>(`/ByCompany/${companyId}?${params}`);
+};
+export const createDriver = (data: Partial<DriverModel>) => fetchApi<ApiGetOneResponse<DriverModel>>(`/drivers`, 'POST', data);
+export const updateDriver = (id: string, data: Partial<DriverModel>) => fetchApi<ApiStatusResponse>(`/drivers/${id}`, 'PUT', data);
+export const deleteDriver = (id: string) => fetchApi<ApiStatusResponse>(`/drivers/${id}`, 'DELETE');
+export const linkDriverCompany = (driverId: string, companyId: string) => fetchApi<ApiStatusResponse>(`/drivers/${driverId}/link-company`, 'POST', { companyId });
+
+
+/* ==============================================================
+   Companies
+============================================================== */
+export const getCompanies = (query: PaginationQuery) => {
+  const params = new URLSearchParams({
+    pageNum: query.pageNum.toString(),
+    pageSize: query.pageSize.toString(),
+  });
+  if (query.term) params.append('term', query.term);
+  return fetchApi<ApiGetManyResponse<CompanyModel>>(`/companies?${params}`);
+};
+
+export const getCompany = (id: string) => fetchApi<ApiGetOneResponse<CompanyModel>>(`/companies/${id}`);
+export const createCompany = (data: Partial<CompanyModel>) => fetchApi<ApiGetOneResponse<CompanyModel>>(`/companies`, 'POST', data);
+export const updateCompany = (id: string, data: Partial<CompanyModel>) => fetchApi<ApiStatusResponse>(`/companies/${id}`, 'PUT', data);
+export const deleteCompany = (id: string) => fetchApi<ApiStatusResponse>(`/companies/${id}`, 'DELETE');
