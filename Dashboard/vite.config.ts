@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://aqaariq.com/marketplace/api/v1',
+        target: 'https://aqaariq.com/marketplace/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

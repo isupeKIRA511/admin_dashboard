@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Users, Phone, Car, TrendingUp, Loader2, Search, ChevronLeft, ChevronRight, Trash2, Link } from 'lucide-react';
+import { Loader2, Search, ChevronLeft, ChevronRight, Trash2, Link } from 'lucide-react';
 import type { DriverModel } from '../../types/admin';
-import { getDriversByCompany, deleteDriver, linkDriverCompany } from '../../services/adminService';
+import { deleteDriver, linkDriverCompany } from '../../services/adminService';
 
 // Note: To list ALL drivers we don't have a direct endpoint in API-Admin.md, it says GET /ByCompany/{companyId}.
 // Wait, the documentation says "Get Driver by ID" and "List Drivers by Company". 
@@ -18,11 +18,8 @@ export const DriverList: React.FC = () => {
   // Pagination & Filters
   const [term, setTerm] = useState('');
   const [pageNum, setPageNum] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize,] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
-
-  // Company link logic
-  const [isLinking, setIsLinking] = useState<string | null>(null);
 
   const fetchDriversData = async () => {
     setIsLoading(true);

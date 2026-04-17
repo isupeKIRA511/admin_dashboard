@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { PlaneTakeoff, Lock, Phone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { adminLogin } from '../lib/apiClient';
 
 export const LoginPage: React.FC = () => {
@@ -8,7 +7,6 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

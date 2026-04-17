@@ -70,7 +70,7 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({ isOpen, onCl
       onClose();
     } catch (error: any) {
       console.error(error);
-      addToast(error.message || `Failed to save company`, 'danger');
+      addToast(error.message || `Failed to save company`, 'error');
     } finally {
       setIsSubmitting(false);
     }

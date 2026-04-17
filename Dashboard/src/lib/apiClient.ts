@@ -1,6 +1,6 @@
 import type { AuthResponse } from '../types/admin';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://aqaariq.com/marketplace/api/v1';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://aqaariq.com/marketplace/api';
 
 export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any): Promise<T> {
     const token = localStorage.getItem('token'); 

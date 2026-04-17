@@ -17,7 +17,7 @@ export const CompanyList: React.FC = () => {
   // Pagination & Filters
   const [term, setTerm] = useState('');
   const [pageNum, setPageNum] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize,] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
   const fetchCompaniesData = async () => {

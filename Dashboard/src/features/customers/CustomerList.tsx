@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { MoreVertical, User, Loader2, Search, ChevronLeft, ChevronRight, Trash2, Edit } from 'lucide-react';
+import { User, Loader2, Search, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import type { CustomerModel } from '../../types/admin';
 import { getCustomers, updateCustomer, deleteCustomer } from '../../services/adminService';
 
@@ -12,7 +12,7 @@ export const CustomerList: React.FC = () => {
   // Pagination & Filters
   const [term, setTerm] = useState('');
   const [pageNum, setPageNum] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
   const fetchCustomersData = async () => {

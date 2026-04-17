@@ -10,7 +10,6 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { fetchApi } from '../lib/api'; 
 
-const trendingUp = TrendingUp; 
 
 export const Dashboard: React.FC = () => {
   const addToast = useToastStore(state => state.addToast);
