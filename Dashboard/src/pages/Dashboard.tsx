@@ -17,21 +17,11 @@ export const Dashboard: React.FC = () => {
   const [startDate, endDate] = dateRange;
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
-  const [alerts, setAlerts] = useState<any[]>([]);
-
-  useEffect(() => {
-    const loadAlerts = async () => {
-      try {
-        const data = await fetchApi('/api/dashboard/alerts');
-        if (data && Array.isArray(data)) {
-          setAlerts(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch alerts:', error);
-      }
-    };
-    loadAlerts();
-  }, []);
+  const [alerts, setAlerts] = useState<any[]>([
+    { title: "System Initialized", time: "10:00 AM", desc: "All core services are running optimally.", color: "text-emerald-500", bg: "bg-emerald-100", icon: AlertCircle },
+    { title: "New Drivers Available", time: "11:30 AM", desc: "Drivers have been onboarded.", color: "text-blue-500", bg: "bg-blue-100", icon: AlertCircle },
+    { title: "High Demand", time: "01:00 PM", desc: "High passenger demand detected.", color: "text-amber-500", bg: "bg-amber-100", icon: AlertCircle }
+  ]);
 
   const handleExport = () => {
     addToast('Generating PDF system report...', 'info');

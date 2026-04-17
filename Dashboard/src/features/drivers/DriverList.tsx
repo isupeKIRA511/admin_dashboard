@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Loader2, Search, ChevronLeft, ChevronRight, Trash2, Link } from 'lucide-react';
-import type { DriverModel } from '../../types/admin';
-import { deleteDriver, linkDriverCompany } from '../../services/adminService';
-
-// Note: To list ALL drivers we don't have a direct endpoint in API-Admin.md, it says GET /ByCompany/{companyId}.
-// Wait, the documentation says "Get Driver by ID" and "List Drivers by Company". 
-// It doesn't have a "List ALL drivers"! Let's implement it based on assuming we might need to filter by company, but for now we might mock or ask user. Wait! The prompt says: "User Management: Create/Update components to list, view, and delete Customers and Drivers using GET /customers and GET /drivers."
-// Aha! In the prompt, it says: "using GET /customers and GET /drivers".
-// So there IS a `GET /drivers` endpoint. I will update `adminService.ts` and use it.
+import { Users, Phone, Car, TrendingUp, Loader2, Search, ChevronLeft, ChevronRight, ChevronDown, Trash2, Building2 } from 'lucide-react';
+import type { DriverModel, CompanyModel } from '../../types/admin';
+import { getDriversByCompany, deleteDriver, getCompanies } from '../../services/adminService';
 
 export const DriverList: React.FC = () => {
+  const [companies, setCompanies] = useState<CompanyModel[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
+  
   const [drivers, setDrivers] = useState<DriverModel[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(true);
 
   // Pagination & Filters
   const [term, setTerm] = useState('');
@@ -21,57 +19,61 @@ export const DriverList: React.FC = () => {
   const [pageSize,] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
+  useEffect(() => {
+    // Load companies for the dropdown
+    const loadCompanies = async () => {
+      try {
+        const resp = await getCompanies({ pageNum: 1, pageSize: 100 });
+        if (resp.success) {
+          setCompanies(resp.data);
+          if (resp.data.length > 0) {
+            setSelectedCompanyId(resp.data[0].id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load companies:', error);
+      } finally {
+        setIsLoadingCompanies(false);
+      }
+    };
+    loadCompanies();
+  }, []);
+
   const fetchDriversData = async () => {
+    if (!selectedCompanyId) return;
+    
     setIsLoading(true);
     try {
-      // Prompt mentioned GET /drivers. Let's use it directly with fetchApi
-      import('../../lib/apiClient').then(async ({ fetchApi }) => {
-          const params = new URLSearchParams({
-            pageNum: pageNum.toString(),
-            pageSize: pageSize.toString(),
-          });
-          if (term) params.append('term', term);
-          const resp = await fetchApi<any>(`/drivers?${params}`);
-          if (resp.success) {
-            setDrivers(resp.data);
-            setTotalCount(resp.totalCount || resp.data.length);
-          }
-      }).finally(() => setIsLoading(false));
+      const resp = await getDriversByCompany(selectedCompanyId, { pageNum, pageSize, term });
+      if (resp.success) {
+        setDrivers(resp.data);
+        setTotalCount(resp.totalCount);
+      }
     } catch (error) {
       console.error('Failed to fetch drivers:', error);
+    } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDriversData();
-  }, [pageNum, pageSize, term]);
+    if (selectedCompanyId) {
+      fetchDriversData();
+    } else {
+      setDrivers([]);
+      setTotalCount(0);
+    }
+  }, [pageNum, pageSize, term, selectedCompanyId]);
 
-  const handleDelete = async (id: string, isRestore: boolean = false) => {
-    if (window.confirm(`Are you sure you want to ${isRestore ? 'restore' : 'delete'} this driver?`)) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this driver?')) {
       try {
-        if (isRestore) {
-           import('../../services/adminService').then(m => m.updateDriver(id, { deletedAt: null }));
-        } else {
-           await deleteDriver(id);
-        }
+        await deleteDriver(id);
         fetchDriversData();
       } catch (error) {
-        console.error(`Failed to ${isRestore ? 'restore' : 'delete'} driver`, error);
-        alert(`Failed to ${isRestore ? 'restore' : 'delete'} driver`);
+        console.error('Failed to delete driver', error);
+        alert('Failed to delete driver');
       }
-    }
-  };
-
-  const handleLinkCompany = async (driverId: string) => {
-    const companyId = window.prompt("Enter Company ID to link:");
-    if (companyId) {
-       try {
-         await linkDriverCompany(driverId, companyId);
-         fetchDriversData();
-       } catch(error) {
-         alert("Failed to link company.");
-       }
     }
   };
 
@@ -79,26 +81,53 @@ export const DriverList: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Drivers</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage registered drivers</p>
+          <p className="text-sm text-slate-500 mt-1">Manage registered drivers by company</p>
+        </div>
+        
+        {/* Company Selector */}
+        <div className="flex items-center gap-2">
+          <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
+            <Building2 className="h-5 w-5" />
+          </div>
+          <div className="relative">
+            <select
+              className="appearance-none pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-medium text-slate-700 min-w-[200px]"
+              value={selectedCompanyId}
+              onChange={(e) => {
+                setSelectedCompanyId(e.target.value);
+                setPageNum(1);
+              }}
+              disabled={isLoadingCompanies}
+            >
+              <option value="">Select a Company...</option>
+              {companies.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+              <ChevronDown className="h-4 w-4" />
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <div className="relative w-64">
+          <div className="relative w-full max-sm:w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search drivers..."
-              className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              placeholder="Search drivers in this company..."
+              className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 disabled:opacity-50"
               value={term}
               onChange={(e) => {
                 setTerm(e.target.value);
                 setPageNum(1);
               }}
+              disabled={!selectedCompanyId}
             />
           </div>
         </div>
@@ -115,11 +144,18 @@ export const DriverList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
+              {!selectedCompanyId ? (
+                 <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                    <Building2 className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                    Please select a company from the dropdown to view its drivers.
+                  </td>
+                 </tr>
+              ) : isLoading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-indigo-500" />
-                    Loading...
+                    Loading drivers...
                   </td>
                 </tr>
               ) : drivers && drivers.length > 0 ? (
@@ -161,15 +197,8 @@ export const DriverList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-500 hover:bg-indigo-50" onClick={() => handleLinkCompany(driver.id)}>
-                              <Link className="h-4 w-4" />
-                            </Button>
-                            {isDeleted ? (
-                              <Button variant="outline" size="sm" onClick={() => handleDelete(driver.id, true)}>
-                                Restore
-                              </Button>
-                            ) : (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(driver.id, false)}>
+                            {!isDeleted && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(driver.id)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             )}
@@ -181,7 +210,7 @@ export const DriverList: React.FC = () => {
               ) : (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
-                    No drivers found.
+                    No drivers found for this company.
                   </td>
                 </tr>
               )}
@@ -190,7 +219,7 @@ export const DriverList: React.FC = () => {
         </div>
         
         {/* Pagination */ }
-        {!isLoading && totalCount > 0 && (
+        {!isLoading && totalCount > 0 && selectedCompanyId && (
           <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
             <span className="text-sm text-slate-500">
               Showing {(pageNum - 1) * pageSize + 1} to {Math.min(pageNum * pageSize, totalCount)} of {totalCount} entries

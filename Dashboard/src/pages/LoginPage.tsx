@@ -15,11 +15,11 @@ export const LoginPage: React.FC = () => {
 
     try {
       const response = await adminLogin(phoneNumber, password);
-      // Store token securely
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('adminPhone', response.phoneNumber);
+      // Store token for this browser session only (cleared when the tab/window is closed)
+      sessionStorage.setItem('token', response.token);
+      sessionStorage.setItem('adminPhone', response.phoneNumber);
       // Redirect to dashboard
-      window.location.href = '/'; 
+      window.location.href = '/';
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -30,7 +30,7 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 p-8 space-y-8 animate-in fade-in zoom-in-95 duration-500">
-        
+
         <div className="text-center space-y-2">
           <div className="mx-auto h-16 w-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 ring-8 ring-slate-50">
             <PlaneTakeoff className="h-8 w-8" />
@@ -47,33 +47,33 @@ export const LoginPage: React.FC = () => {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div className="space-y-2">
-             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block ml-1">Phone Number</label>
-             <div className="relative">
-               <input
-                 type="text"
-                 required
-                 placeholder="admin"
-                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 font-medium transition-all"
-                 value={phoneNumber}
-                 onChange={(e) => setPhoneNumber(e.target.value)}
-               />
-               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-             </div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block ml-1">Phone Number</label>
+            <div className="relative">
+              <input
+                type="text"
+                required
+                placeholder="admin"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 font-medium transition-all"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+            </div>
           </div>
 
           <div className="space-y-2">
-             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block ml-1">Password</label>
-             <div className="relative">
-               <input
-                 type="password"
-                 required
-                 placeholder="••••••••"
-                 className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 font-medium transition-all"
-                 value={password}
-                 onChange={(e) => setPassword(e.target.value)}
-               />
-               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-             </div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block ml-1">Password</label>
+            <div className="relative">
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 font-medium transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+            </div>
           </div>
 
           <button

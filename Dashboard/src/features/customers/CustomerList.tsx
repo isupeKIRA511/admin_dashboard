@@ -34,19 +34,14 @@ export const CustomerList: React.FC = () => {
     fetchCustomersData();
   }, [pageNum, pageSize, term]);
 
-  const handleDelete = async (id: string, isRestore: boolean = false) => {
-    if (window.confirm(`Are you sure you want to ${isRestore ? 'restore' : 'delete'} this customer?`)) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm(`Are you sure you want to delete this customer?`)) {
       try {
-        if (isRestore) {
-           // To restore, we set deletedAt to null (or we don't have restore endpoint? In specs missing, but we can do it via PUT)
-           await updateCustomer(id, { deletedAt: null });
-        } else {
-           await deleteCustomer(id);
-        }
+        await deleteCustomer(id);
         fetchCustomersData();
       } catch (error) {
-        console.error(`Failed to ${isRestore ? 'restore' : 'delete'} customer`, error);
-        alert(`Failed to ${isRestore ? 'restore' : 'delete'} customer`);
+        console.error(`Failed to delete customer`, error);
+        alert(`Failed to delete customer`);
       }
     }
   };
@@ -131,12 +126,8 @@ export const CustomerList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {isDeleted ? (
-                              <Button variant="outline" size="sm" onClick={() => handleDelete(customer.id, true)}>
-                                Restore
-                              </Button>
-                            ) : (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(customer.id, false)}>
+                            {!isDeleted && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(customer.id)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             )}

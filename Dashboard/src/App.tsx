@@ -12,17 +12,27 @@ import { LoginPage } from './pages/LoginPage';
 import { CustomersPage } from './pages/CustomersPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
   return <>{children}</>;
 };
 
 function App() {
+  // Ensure any old persisted tokens in localStorage are cleared so login is required
+  // when opening the site (older versions used localStorage). We rely on sessionStorage now.
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('adminPhone');
+    } catch (e) {
+      // ignore (e.g., SSR or privacy restrictions)
+    }
+  }, []);
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        
+
         <Route path="/*" element={
           <ProtectedRoute>
             <MainLayout>
