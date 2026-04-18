@@ -10,7 +10,7 @@ export const FinancialSettlement: React.FC = () => {
   useEffect(() => {
     const loadSettlements = async () => {
       try {
-        const data = await fetchApi('/api/trips');
+        const data = await fetchApi('/trips');
         if (data && Array.isArray(data)) {
           const completedTrips = data.filter((t: any) => t.status === 'completed');
           setTrips(completedTrips);

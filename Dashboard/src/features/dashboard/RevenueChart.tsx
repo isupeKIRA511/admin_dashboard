@@ -10,7 +10,7 @@ export const RevenueChart: React.FC = () => {
   useEffect(() => {
     const loadChartData = async () => {
       try {
-        const chartData = await fetchApi('/api/dashboard/chart');
+        const chartData = await fetchApi('/dashboard/chart');
         if (chartData && Array.isArray(chartData)) {
           setData(chartData);
         }

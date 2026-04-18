@@ -27,7 +27,7 @@ export const SettingsPage: React.FC = () => {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const data = await fetchApi<any>('/api/settings');
+        const data = await fetchApi<any>('/settings');
         if (data) {
           setSettings({
             platformName: data.platformName || '',
@@ -53,7 +53,7 @@ export const SettingsPage: React.FC = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      await fetchApi('/api/settings', 'PUT', settings);
+      await fetchApi('/settings', 'PUT', settings);
       setMessage({ type: 'success', text: 'تم حفظ الإعدادات بنجاح.' });
       setTimeout(() => setMessage({ type: '', text: '' }), 5000);
     } catch (error) {

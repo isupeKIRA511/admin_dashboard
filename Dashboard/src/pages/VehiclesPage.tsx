@@ -1,62 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../components/ui/Badge';
-import { 
-  Car, 
-  Fuel, 
-  ShieldCheck, 
-  Activity, 
-  Truck, 
-  Accessibility, 
-  Users2, 
+import {
+  Car,
+  Fuel,
+  ShieldCheck,
+  Activity,
+  Truck,
+  Accessibility,
+  Users2,
   ChevronRight,
   Monitor
 } from 'lucide-react';
 import { fetchApi } from '../lib/apiClient';
 
 export const VehiclesPage: React.FC = () => {
-  
+
   const [fleets, setFleets] = useState<any[]>([]);
 
   useEffect(() => {
-    const loadVehiclesFromDrivers = async () => {
+    const loadVehicles = async () => {
       try {
-        // Since there's no /Vehicle endpoint, we derive vehicles from /Driver
-        const response = await fetchApi<any>('/Driver'); 
-        const drivers = response.data || [];
-        
-        // Group drivers by company to create "fleets"
-        const grouped = drivers.reduce((acc: any, driver: any) => {
-          const companyName = driver.company?.name || 'Independent Partners';
-          if (!acc[companyName]) {
-            acc[companyName] = {
-              company: companyName,
-              desc: `Fleet managed by ${companyName}`,
-              vehicles: []
-            };
-          }
-          
-          acc[companyName].vehicles.push({
-            id: driver.id,
-            model: `${driver.carBrand} ${driver.carModel}`,
-            plate: driver.carLicensePlate,
-            type: 'Passenger Vehicle',
-            status: 'active',
-            mileage: 'Tracked via GPS',
-            icon: 'Car'
-          });
-          
-          return acc;
-        }, {});
-
-        setFleets(Object.values(grouped));
+        const data = await fetchApi('/vehicles');
+        if (data && Array.isArray(data)) {
+          setFleets(data);
+        }
       } catch (error) {
         console.error('Failed to fetch vehicles:', error);
       }
     };
-    loadVehiclesFromDrivers();
+    loadVehicles();
   }, []);
 
   const getIcon = (iconData: any) => {
+    if (typeof iconData === 'function' || typeof iconData === 'object') return iconData;
     switch (iconData) {
       case 'Users2': return Users2;
       case 'Monitor': return Monitor;
@@ -95,13 +71,13 @@ export const VehiclesPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {group.vehicles && group.vehicles.map((v: any) => {
                   const IconComponent = getIcon(v.icon);
-                  
+
                   return (
                     <div key={v.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <IconComponent className="h-20 w-20" />
                       </div>
-                      
+
                       <div className="flex justify-between items-start mb-4">
                         <Badge variant={v.status === 'active' ? 'success' : 'danger'}>
                           {v.status ? v.status.toUpperCase() : 'UNKNOWN'}
@@ -139,8 +115,8 @@ export const VehiclesPage: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="text-center py-12 text-slate-500 font-medium">
-            جاري جلب بيانات الأسطول من سجل السائقين...
+          <div className="text-center py-12 text-slate-500">
+            لا توجد مركبات لعرضها حالياً.
           </div>
         )}
       </div>

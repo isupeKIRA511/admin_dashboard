@@ -18,7 +18,6 @@ export const getCustomers = (query: PaginationQuery) => {
     pageSize: query.pageSize.toString(),
   });
   if (query.term) params.append('term', query.term);
-  // Swagger Mapping: GET /Customer
   return fetchApi<ApiGetManyResponse<CustomerModel>>(`/Customer?${params}`);
 };
 
@@ -53,7 +52,6 @@ export const getCompanies = (query: PaginationQuery) => {
     pageSize: query.pageSize.toString(),
   });
   if (query.term) params.append('term', query.term);
-  // Swagger Mapping: GET /Company
   return fetchApi<ApiGetManyResponse<CompanyModel>>(`/Company?${params}`);
 };
 

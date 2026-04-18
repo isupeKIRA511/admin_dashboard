@@ -1,21 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-<<<<<<< HEAD
-import { Loader2, Search, ChevronLeft, ChevronRight, Trash2, Link } from 'lucide-react';
-import type { DriverModel } from '../../types/admin';
-import { deleteDriver, linkDriverCompany } from '../../services/adminService';
-
-// Note: To list ALL drivers we don't have a direct endpoint in API-Admin.md, it says GET /ByCompany/{companyId}.
-// Wait, the documentation says "Get Driver by ID" and "List Drivers by Company". 
-// It doesn't have a "List ALL drivers"! Let's implement it based on assuming we might need to filter by company, but for now we might mock or ask user. Wait! The prompt says: "User Management: Create/Update components to list, view, and delete Customers and Drivers using GET /customers and GET /drivers."
-// Aha! In the prompt, it says: "using GET /customers and GET /drivers".
-// So there IS a `GET /drivers` endpoint. I will update `adminService.ts` and use it.
-=======
-import { Users, Phone, Car, TrendingUp, Loader2, Search, ChevronLeft, ChevronRight, ChevronDown, Trash2, Building2 } from 'lucide-react';
+import { Loader2, Search, ChevronLeft, ChevronRight, ChevronDown, Trash2, Building2 } from 'lucide-react';
 import type { DriverModel, CompanyModel } from '../../types/admin';
 import { getDriversByCompany, deleteDriver, getCompanies } from '../../services/adminService';
->>>>>>> f7efa11 (chore(auth): use sessionStorage for token so login is required each browser session)
 
 export const DriverList: React.FC = () => {
   const [companies, setCompanies] = useState<CompanyModel[]>([]);
@@ -31,8 +19,6 @@ export const DriverList: React.FC = () => {
   const [pageSize,] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
-<<<<<<< HEAD
-=======
   useEffect(() => {
     // Load companies for the dropdown
     const loadCompanies = async () => {
@@ -52,8 +38,6 @@ export const DriverList: React.FC = () => {
     };
     loadCompanies();
   }, []);
-
->>>>>>> f7efa11 (chore(auth): use sessionStorage for token so login is required each browser session)
   const fetchDriversData = async () => {
     if (!selectedCompanyId) return;
 

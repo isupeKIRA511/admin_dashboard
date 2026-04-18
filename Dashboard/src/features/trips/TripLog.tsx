@@ -16,10 +16,8 @@ export const TripLog: React.FC = () => {
     const loadData = async () => {
       try {
         const [tripsData, companiesData] = await Promise.all([
-          // Swagger: GET /Ride (Admin list)
-          fetchApi('/Ride'),
-          // Swagger: GET /Company
-          fetchApi('/Company')
+          fetchApi('/trips'),
+          fetchApi('/companies')
         ]);
 
         if (tripsData && Array.isArray(tripsData)) setTrips(tripsData);
@@ -30,7 +28,7 @@ export const TripLog: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     loadData();
   }, []);
 
@@ -40,10 +38,10 @@ export const TripLog: React.FC = () => {
     const flightMatch = trip.flightNumber ? trip.flightNumber.toLowerCase().includes(search.toLowerCase()) : false;
     const passengerMatch = trip.passengerName ? trip.passengerName.toLowerCase().includes(search.toLowerCase()) : false;
     const matchSearch = flightMatch || passengerMatch;
-    
+
     const matchCompany = companyFilter ? trip.companyId === companyFilter : true;
     const matchDate = dateFilter ? trip.pickupTime && trip.pickupTime.startsWith(dateFilter) : true;
-    
+
     return matchSearch && matchCompany && matchDate;
   });
 
@@ -54,19 +52,19 @@ export const TripLog: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Airport Transfers</h1>
           <p className="text-sm text-slate-500 mt-1">Master log of all platform bookings</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Flight or Passenger..."
               className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <select
@@ -80,10 +78,10 @@ export const TripLog: React.FC = () => {
               ))}
             </select>
           </div>
-          
+
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input 
+            <input
               type="date"
               className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm w-44 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-600"
               value={dateFilter}
@@ -119,7 +117,7 @@ export const TripLog: React.FC = () => {
                 filteredTrips.map((trip) => {
                   const company = getCompany(trip.companyId);
                   const date = trip.pickupTime ? new Date(trip.pickupTime) : new Date();
-                  
+
                   return (
                     <tr key={trip.id || Math.random()} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
@@ -129,7 +127,7 @@ export const TripLog: React.FC = () => {
                           </div>
                           <div>
                             <div className="font-bold text-slate-800">{trip.flightNumber || 'N/A'}</div>
-                            <div className="text-xs text-slate-400 font-mono">#{trip.id ? trip.id.toString().slice(0,6).toUpperCase() : 'N/A'}</div>
+                            <div className="text-xs text-slate-400 font-mono">#{trip.id ? trip.id.toString().slice(0, 6).toUpperCase() : 'N/A'}</div>
                           </div>
                         </div>
                       </td>
@@ -142,7 +140,7 @@ export const TripLog: React.FC = () => {
                         <div className="text-xs text-slate-400 mt-1 truncate max-w-[150px]">→ {trip.dropoffLocation || 'N/A'}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-slate-700">{trip.pickupTime ? date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--'}</div>
+                        <div className="text-sm font-medium text-slate-700">{trip.pickupTime ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</div>
                         <div className="text-xs text-slate-500">{trip.pickupTime ? date.toLocaleDateString() : '--/--/----'}</div>
                       </td>
                       <td className="px-6 py-4">
@@ -151,11 +149,11 @@ export const TripLog: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge 
+                        <Badge
                           variant={
-                            trip.status === 'completed' ? 'success' : 
-                            trip.status === 'ongoing' ? 'warning' : 
-                            trip.status === 'canceled' ? 'danger' : 'slate'
+                            trip.status === 'completed' ? 'success' :
+                              trip.status === 'ongoing' ? 'warning' :
+                                trip.status === 'canceled' ? 'danger' : 'slate'
                           }
                         >
                           {trip.status ? trip.status.replace('-', ' ') : 'N/A'}

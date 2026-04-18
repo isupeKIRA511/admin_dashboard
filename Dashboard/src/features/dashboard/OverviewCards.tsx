@@ -15,8 +15,8 @@ export const OverviewCards: React.FC = () => {
     const loadStats = async () => {
       try {
         const [tripsData, companiesData] = await Promise.all([
-          fetchApi('/api/trips'),
-          fetchApi('/api/companies')
+          fetchApi('/trips'),
+          fetchApi('/companies')
         ]);
 
         let gmv = 0;
