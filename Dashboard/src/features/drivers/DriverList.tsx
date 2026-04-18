@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Loader2, Search, ChevronLeft, ChevronRight, ChevronDown, Trash2, Building2 } from 'lucide-react';
+import { Loader2, Search, ChevronLeft, ChevronRight, ChevronDown, Trash2, Building2, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { DriverModel, CompanyModel } from '../../types/admin';
 import { getDriversByCompany, deleteDriver, getCompanies } from '../../services/adminService';
 
@@ -26,7 +27,12 @@ export const DriverList: React.FC = () => {
         const resp = await getCompanies({ pageNum: 1, pageSize: 100 });
         if (resp.success) {
           setCompanies(resp.data);
-          if (resp.data.length > 0) {
+          // If the URL contains a companyId query param, prefer it (so /drivers?companyId=... works)
+          const params = new URLSearchParams(window.location.search || '');
+          const q = params.get('companyId');
+          if (q && resp.data.find((c) => c.id === q)) {
+            setSelectedCompanyId(q);
+          } else if (resp.data.length > 0) {
             setSelectedCompanyId(resp.data[0].id);
           }
         }
@@ -77,6 +83,7 @@ export const DriverList: React.FC = () => {
   };
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -86,8 +93,8 @@ export const DriverList: React.FC = () => {
           <p className="text-sm text-slate-500 mt-1">Manage registered drivers by company</p>
         </div>
 
-        {/* Company Selector */}
-        <div className="flex items-center gap-2">
+        {/* Company Selector + Register Driver button */}
+        <div className="flex items-center gap-3">
           <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
             <Building2 className="h-5 w-5" />
           </div>
@@ -109,6 +116,22 @@ export const DriverList: React.FC = () => {
             <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
               <ChevronDown className="h-4 w-4" />
             </div>
+          </div>
+
+          <div>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                const query = selectedCompanyId ? `?companyId=${selectedCompanyId}` : '';
+                navigate(`/driver-register${query}`);
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Register Driver
+              </div>
+            </Button>
           </div>
         </div>
       </div>

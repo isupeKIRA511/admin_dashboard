@@ -13,8 +13,10 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
         'Content-Type': 'application/json',
     };
 
-    // Add Authorization header if token exists and it's not a login request
-    if (token && !endpoint.toLowerCase().includes('/auth/admin/login')) {
+    // Add Authorization header if token exists and it's not an auth request
+    // (OTP and public auth endpoints should be called without an Authorization header)
+    const lowerEndpoint = endpoint.toLowerCase();
+    if (token && !lowerEndpoint.startsWith('/auth')) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
@@ -47,8 +49,13 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
         }
 
         if (!response.ok) {
+            // Include server response body when throwing so callers can inspect validation details
             const message = data?.message || `خطأ بالاتصال: ${response.status}`;
-            throw new Error(message);
+            const err: any = new Error(message);
+            err.status = response.status;
+            err.data = data;
+            err.url = `${API_BASE}${normalizedEndpoint}`;
+            throw err;
         }
 
         return data as T;

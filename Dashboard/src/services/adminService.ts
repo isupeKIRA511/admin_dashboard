@@ -1,13 +1,15 @@
 import { fetchApi } from '../lib/apiClient';
-import type { 
-  PaginationQuery, 
-  ApiGetManyResponse, 
-  ApiGetOneResponse, 
+import type {
+  PaginationQuery,
+  ApiGetManyResponse,
+  ApiGetOneResponse,
   ApiStatusResponse,
   CustomerModel,
   DriverModel,
   CompanyModel
 } from '../types/admin';
+
+// OTP and registration request types are defined in types/admin.ts
 
 /* ==============================================================
    Customers
@@ -41,6 +43,17 @@ export const getDriversByCompany = (companyId: string, query: PaginationQuery) =
 export const createDriver = (data: Partial<DriverModel>) => fetchApi<ApiGetOneResponse<DriverModel>>(`/Driver`, 'POST', data);
 export const updateDriver = (id: string, data: Partial<DriverModel>) => fetchApi<ApiStatusResponse>(`/Driver/${id}`, 'PUT', data);
 export const deleteDriver = (id: string) => fetchApi<ApiStatusResponse>(`/Driver/${id}`, 'DELETE');
+
+// Register driver via the dedicated registration endpoint (public-facing)
+// Use the main Driver POST endpoint for registration (matches backend Swagger)
+export const registerDriver = (data: Partial<DriverModel>) => fetchApi<ApiGetOneResponse<DriverModel>>(`/Driver`, 'POST', data);
+
+// Auth (OTP) endpoints for drivers and customers
+export const requestDriverOtp = (payload: { phoneNumber?: string }) => fetchApi(`/Auth/driver/request-otp`, 'POST', payload);
+export const verifyDriverOtp = (payload: { phoneNumber?: string; otp?: string }) => fetchApi(`/Auth/driver/verify-otp`, 'POST', payload);
+
+export const requestCustomerOtp = (payload: { phoneNumber?: string }) => fetchApi(`/Auth/customer/request-otp`, 'POST', payload);
+export const verifyCustomerOtp = (payload: { phoneNumber?: string; otp?: string }) => fetchApi(`/Auth/customer/verify-otp`, 'POST', payload);
 
 
 /* ==============================================================

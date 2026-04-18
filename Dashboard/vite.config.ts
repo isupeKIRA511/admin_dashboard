@@ -12,17 +12,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React runtime
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          // UI & charting libraries (heavy, but used on multiple pages)
-          'charts': ['recharts'],
-          // Map library — only used in Dashboard
-          'map': ['react-leaflet', 'leaflet'],
-          // PDF export — only triggered on-demand
-          'pdf': ['jspdf'],
-          // Date picker — used in Dashboard
-          'datepicker': ['react-datepicker'],
+        // Use a manualChunks function to map modules to chunk names (satisfies Rollup/Vite types)
+        manualChunks(id: string) {
+          if (!id) return undefined;
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'react-vendor';
+            if (id.includes('recharts')) return 'charts';
+            if (id.includes('react-leaflet') || id.includes('leaflet')) return 'map';
+            if (id.includes('jspdf')) return 'pdf';
+            if (id.includes('react-datepicker')) return 'datepicker';
+          }
+          return undefined;
         },
       },
     },

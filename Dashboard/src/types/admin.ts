@@ -65,3 +65,23 @@ export interface CompanyModel {
   createdAt: string;
   deletedAt: string | null;
 }
+
+// OTP request/verify shapes
+export interface OtpRequest {
+  phoneNumber?: string;
+}
+
+export interface OtpVerifyRequest {
+  phoneNumber?: string;
+  otp?: string;
+}
+
+// Driver registration request (public-facing). Use Partial when creating via service.
+export interface DriverRegisterRequest {
+  name?: string;
+  phoneNumber?: string;
+  companyId?: string;
+  carModel?: string;
+  carBrand?: string;
+  carLicensePlate?: string;
+}

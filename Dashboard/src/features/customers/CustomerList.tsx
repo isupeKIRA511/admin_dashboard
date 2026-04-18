@@ -3,7 +3,7 @@ import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { User, Loader2, Search, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import type { CustomerModel } from '../../types/admin';
-import { getCustomers, updateCustomer, deleteCustomer } from '../../services/adminService';
+import { getCustomers, deleteCustomer } from '../../services/adminService';
 
 export const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<CustomerModel[]>([]);
@@ -126,11 +126,11 @@ export const CustomerList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {!isDeleted && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(customer.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
+                          {!isDeleted && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(customer.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -146,18 +146,18 @@ export const CustomerList: React.FC = () => {
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */ }
+
+        {/* Pagination */}
         {!isLoading && totalCount > 0 && (
           <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
             <span className="text-sm text-slate-500">
               Showing {(pageNum - 1) * pageSize + 1} to {Math.min(pageNum * pageSize, totalCount)} of {totalCount} entries
             </span>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8" 
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
                 disabled={pageNum === 1}
                 onClick={() => setPageNum(p => p - 1)}
               >
@@ -166,10 +166,10 @@ export const CustomerList: React.FC = () => {
               <span className="text-sm text-slate-700 font-medium px-2">
                 Page {pageNum} of {totalPages}
               </span>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8" 
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
                 disabled={pageNum === totalPages}
                 onClick={() => setPageNum(p => p + 1)}
               >

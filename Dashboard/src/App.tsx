@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { MainLayout } from './layouts/MainLayout';
 import { LoginPage } from './pages/LoginPage';
+import DriverRegisterPage from './pages/DriverRegisterPage';
 
 // Lazy-load pages to reduce initial bundle size
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -31,6 +32,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        {/* Public driver registration (OTP -> verify -> register) */}
+        <Route path="/driver-register" element={<DriverRegisterPage />} />
 
         <Route path="/*" element={
           <ProtectedRoute>
