@@ -35,7 +35,7 @@ export const OverviewCards: React.FC = () => {
 
         setStatsData({
           totalGmv: gmv,
-          totalCommission: gmv * 0.15, 
+          totalCommission: gmv * 0.15,
           activeCompaniesCount: activeCompanies,
           totalTripsToday: tripsToday
         });

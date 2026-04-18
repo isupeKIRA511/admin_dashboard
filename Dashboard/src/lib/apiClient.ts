@@ -1,6 +1,6 @@
 import type { AuthResponse } from '../types/admin';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://aqaariq.com/marketplace/api';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://aqaariq.com/marketplace/api/v1';
 
 /**
  * Generic API fetcher with authentication and error handling
@@ -13,7 +13,8 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
     };
 
     // Add Authorization header if token exists and it's not a login request
-    if (token && !endpoint.includes('/auth/admin/login')) {
+    // Corrected to use case-insensitive check or Swagger path
+    if (token && !endpoint.toLowerCase().includes('/auth/admin/login')) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
@@ -30,7 +31,7 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
         const response = await fetch(`${API_BASE}${endpoint}`, config);
 
         // Handle unauthorized (expired token)
-        if (response.status === 401 && !endpoint.includes('/auth/admin/login')) {
+        if (response.status === 401 && !endpoint.toLowerCase().includes('/auth/admin/login')) {
             sessionStorage.removeItem('token');
             window.location.href = '/login';
             throw new Error('جلسة العمل انتهت، يرجى تسجيل الدخول مرة أخرى');
@@ -60,5 +61,6 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
  * specialized login function
  */
 export const adminLogin = async (phoneNumber: string, password: string): Promise<AuthResponse> => {
-    return fetchApi<AuthResponse>('/auth/admin/login', 'POST', { phoneNumber, password });
+    // Swagger confirmation: /Auth/admin/login
+    return fetchApi<AuthResponse>('/Auth/admin/login', 'POST', { phoneNumber, password });
 };

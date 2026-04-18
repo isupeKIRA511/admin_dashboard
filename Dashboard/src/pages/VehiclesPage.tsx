@@ -18,21 +18,45 @@ export const VehiclesPage: React.FC = () => {
   const [fleets, setFleets] = useState<any[]>([]);
 
   useEffect(() => {
-    const loadVehicles = async () => {
+    const loadVehiclesFromDrivers = async () => {
       try {
-        const data = await fetchApi('/api/vehicles'); 
-        if (data && Array.isArray(data)) {
-          setFleets(data);
-        }
+        // Since there's no /Vehicle endpoint, we derive vehicles from /Driver
+        const response = await fetchApi<any>('/Driver'); 
+        const drivers = response.data || [];
+        
+        // Group drivers by company to create "fleets"
+        const grouped = drivers.reduce((acc: any, driver: any) => {
+          const companyName = driver.company?.name || 'Independent Partners';
+          if (!acc[companyName]) {
+            acc[companyName] = {
+              company: companyName,
+              desc: `Fleet managed by ${companyName}`,
+              vehicles: []
+            };
+          }
+          
+          acc[companyName].vehicles.push({
+            id: driver.id,
+            model: `${driver.carBrand} ${driver.carModel}`,
+            plate: driver.carLicensePlate,
+            type: 'Passenger Vehicle',
+            status: 'active',
+            mileage: 'Tracked via GPS',
+            icon: 'Car'
+          });
+          
+          return acc;
+        }, {});
+
+        setFleets(Object.values(grouped));
       } catch (error) {
         console.error('Failed to fetch vehicles:', error);
       }
     };
-    loadVehicles();
+    loadVehiclesFromDrivers();
   }, []);
 
   const getIcon = (iconData: any) => {
-    if (typeof iconData === 'function' || typeof iconData === 'object') return iconData;
     switch (iconData) {
       case 'Users2': return Users2;
       case 'Monitor': return Monitor;
@@ -115,8 +139,8 @@ export const VehiclesPage: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="text-center py-12 text-slate-500">
-            لا توجد مركبات لعرضها حالياً.
+          <div className="text-center py-12 text-slate-500 font-medium">
+            جاري جلب بيانات الأسطول من سجل السائقين...
           </div>
         )}
       </div>

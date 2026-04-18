@@ -16,8 +16,10 @@ export const TripLog: React.FC = () => {
     const loadData = async () => {
       try {
         const [tripsData, companiesData] = await Promise.all([
-          fetchApi('/api/trips'),
-          fetchApi('/api/companies')
+          // Swagger: GET /Ride (Admin list)
+          fetchApi('/Ride'),
+          // Swagger: GET /Company
+          fetchApi('/Company')
         ]);
 
         if (tripsData && Array.isArray(tripsData)) setTrips(tripsData);

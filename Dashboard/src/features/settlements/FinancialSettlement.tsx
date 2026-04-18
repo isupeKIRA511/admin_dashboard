@@ -10,7 +10,7 @@ export const FinancialSettlement: React.FC = () => {
   useEffect(() => {
     const loadSettlements = async () => {
       try {
-        const data = await fetchApi('/api/trips'); 
+        const data = await fetchApi('/api/trips');
         if (data && Array.isArray(data)) {
           const completedTrips = data.filter((t: any) => t.status === 'completed');
           setTrips(completedTrips);
@@ -27,13 +27,13 @@ export const FinancialSettlement: React.FC = () => {
   const cashCollected = trips
     .filter(t => t.paymentMethod === 'cash')
     .reduce((sum, t) => sum + (t.price || 0), 0);
-    
+
   const onlinePaymentsHeld = trips
     .filter(t => t.paymentMethod === 'online')
     .reduce((sum, t) => sum + (t.price || 0), 0);
-  
+
   const totalGmv = cashCollected + onlinePaymentsHeld;
-  const platformCommission = totalGmv * 0.15; 
+  const platformCommission = totalGmv * 0.15;
   const netBalance = onlinePaymentsHeld - platformCommission;
 
   return (
@@ -124,7 +124,7 @@ export const FinancialSettlement: React.FC = () => {
                     return (
                       <tr key={trip.id || Math.random()} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4 font-medium text-slate-700">
-                          #{trip.id ? trip.id.toString().slice(0,6).toUpperCase() : 'N/A'}
+                          #{trip.id ? trip.id.toString().slice(0, 6).toUpperCase() : 'N/A'}
                         </td>
                         <td className="px-6 py-4">
                           {trip.paymentMethod === 'cash' ? (

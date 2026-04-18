@@ -1,14 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+<<<<<<< HEAD
+import { Loader2, Search, ChevronLeft, ChevronRight, Trash2, Link } from 'lucide-react';
+import type { DriverModel } from '../../types/admin';
+import { deleteDriver, linkDriverCompany } from '../../services/adminService';
+
+// Note: To list ALL drivers we don't have a direct endpoint in API-Admin.md, it says GET /ByCompany/{companyId}.
+// Wait, the documentation says "Get Driver by ID" and "List Drivers by Company". 
+// It doesn't have a "List ALL drivers"! Let's implement it based on assuming we might need to filter by company, but for now we might mock or ask user. Wait! The prompt says: "User Management: Create/Update components to list, view, and delete Customers and Drivers using GET /customers and GET /drivers."
+// Aha! In the prompt, it says: "using GET /customers and GET /drivers".
+// So there IS a `GET /drivers` endpoint. I will update `adminService.ts` and use it.
+=======
 import { Users, Phone, Car, TrendingUp, Loader2, Search, ChevronLeft, ChevronRight, ChevronDown, Trash2, Building2 } from 'lucide-react';
 import type { DriverModel, CompanyModel } from '../../types/admin';
 import { getDriversByCompany, deleteDriver, getCompanies } from '../../services/adminService';
+>>>>>>> f7efa11 (chore(auth): use sessionStorage for token so login is required each browser session)
 
 export const DriverList: React.FC = () => {
   const [companies, setCompanies] = useState<CompanyModel[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
-  
+
   const [drivers, setDrivers] = useState<DriverModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(true);
@@ -19,6 +31,8 @@ export const DriverList: React.FC = () => {
   const [pageSize,] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
+<<<<<<< HEAD
+=======
   useEffect(() => {
     // Load companies for the dropdown
     const loadCompanies = async () => {
@@ -39,9 +53,10 @@ export const DriverList: React.FC = () => {
     loadCompanies();
   }, []);
 
+>>>>>>> f7efa11 (chore(auth): use sessionStorage for token so login is required each browser session)
   const fetchDriversData = async () => {
     if (!selectedCompanyId) return;
-    
+
     setIsLoading(true);
     try {
       const resp = await getDriversByCompany(selectedCompanyId, { pageNum, pageSize, term });
@@ -86,7 +101,7 @@ export const DriverList: React.FC = () => {
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Drivers</h1>
           <p className="text-sm text-slate-500 mt-1">Manage registered drivers by company</p>
         </div>
-        
+
         {/* Company Selector */}
         <div className="flex items-center gap-2">
           <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
@@ -116,7 +131,7 @@ export const DriverList: React.FC = () => {
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <div className="relative w-full max-sm:w-full max-w-sm">
+          <div className="relative w-full max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               type="text"
@@ -145,12 +160,12 @@ export const DriverList: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {!selectedCompanyId ? (
-                 <tr>
+                <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                     <Building2 className="h-10 w-10 text-slate-300 mx-auto mb-3" />
                     Please select a company from the dropdown to view its drivers.
                   </td>
-                 </tr>
+                </tr>
               ) : isLoading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
@@ -172,16 +187,16 @@ export const DriverList: React.FC = () => {
                             <div className="font-medium text-slate-800">{driver.name || 'No Name'}</div>
                             <div className="text-xs text-slate-500">{driver.phoneNumber}</div>
                             {driver.company && (
-                               <div className="text-[10px] text-indigo-500 font-bold mt-1">
-                                 {driver.company.name}
-                               </div>
+                              <div className="text-[10px] text-indigo-500 font-bold mt-1">
+                                {driver.company.name}
+                              </div>
                             )}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                         <div className="text-sm font-medium text-slate-800">{driver.carBrand} {driver.carModel}</div>
-                         <div className="text-xs text-slate-500 bg-slate-100 uppercase tracking-widest inline-block px-1 rounded mt-1">{driver.carLicensePlate}</div>
+                        <div className="text-sm font-medium text-slate-800">{driver.carBrand} {driver.carModel}</div>
+                        <div className="text-xs text-slate-500 bg-slate-100 uppercase tracking-widest inline-block px-1 rounded mt-1">{driver.carLicensePlate}</div>
                       </td>
                       <td className="px-6 py-4">
                         {isDeleted ? (
@@ -197,11 +212,11 @@ export const DriverList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {!isDeleted && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(driver.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
+                          {!isDeleted && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(driver.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -217,18 +232,18 @@ export const DriverList: React.FC = () => {
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination */ }
+
+        {/* Pagination */}
         {!isLoading && totalCount > 0 && selectedCompanyId && (
           <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
             <span className="text-sm text-slate-500">
               Showing {(pageNum - 1) * pageSize + 1} to {Math.min(pageNum * pageSize, totalCount)} of {totalCount} entries
             </span>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8" 
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
                 disabled={pageNum === 1}
                 onClick={() => setPageNum(p => p - 1)}
               >
@@ -237,10 +252,10 @@ export const DriverList: React.FC = () => {
               <span className="text-sm text-slate-700 font-medium px-2">
                 Page {pageNum} of {totalPages}
               </span>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8" 
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
                 disabled={pageNum === totalPages}
                 onClick={() => setPageNum(p => p + 1)}
               >
