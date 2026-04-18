@@ -1,15 +1,24 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { MainLayout } from './layouts/MainLayout';
-import { Dashboard } from './pages/Dashboard';
-import { CompaniesPage } from './pages/CompaniesPage';
-import { DriversPage } from './pages/DriversPage';
-import { VehiclesPage } from './pages/VehiclesPage';
-import { TripsPage } from './pages/TripsPage';
-import { SettlementsPage } from './pages/SettlementsPage';
-import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
-import { CustomersPage } from './pages/CustomersPage';
+
+// Lazy-load pages to reduce initial bundle size
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const CompaniesPage = lazy(() => import('./pages/CompaniesPage').then(m => ({ default: m.CompaniesPage })));
+const DriversPage = lazy(() => import('./pages/DriversPage').then(m => ({ default: m.DriversPage })));
+const CustomersPage = lazy(() => import('./pages/CustomersPage').then(m => ({ default: m.CustomersPage })));
+const VehiclesPage = lazy(() => import('./pages/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
+const TripsPage = lazy(() => import('./pages/TripsPage').then(m => ({ default: m.TripsPage })));
+const SettlementsPage = lazy(() => import('./pages/SettlementsPage').then(m => ({ default: m.SettlementsPage })));
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-full min-h-[300px]">
+    <span className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const token = sessionStorage.getItem('token');
@@ -18,16 +27,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
-  // Ensure any old persisted tokens in localStorage are cleared so login is required
-  // when opening the site (older versions used localStorage). We rely on sessionStorage now.
-  React.useEffect(() => {
-    try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('adminPhone');
-    } catch (e) {
-      // ignore (e.g., SSR or privacy restrictions)
-    }
-  }, []);
   return (
     <BrowserRouter>
       <Routes>
@@ -36,17 +35,18 @@ function App() {
         <Route path="/*" element={
           <ProtectedRoute>
             <MainLayout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/companies" element={<CompaniesPage />} />
-                <Route path="/drivers" element={<DriversPage />} />
-                <Route path="/customers" element={<CustomersPage />} />
-                {/* Other pages can be kept or removed based on needs */}
-                <Route path="/vehicles" element={<VehiclesPage />} />
-                <Route path="/trips" element={<TripsPage />} />
-                <Route path="/settlements" element={<SettlementsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-              </Routes>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/companies" element={<CompaniesPage />} />
+                  <Route path="/drivers" element={<DriversPage />} />
+                  <Route path="/customers" element={<CustomersPage />} />
+                  <Route path="/vehicles" element={<VehiclesPage />} />
+                  <Route path="/trips" element={<TripsPage />} />
+                  <Route path="/settlements" element={<SettlementsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                </Routes>
+              </Suspense>
             </MainLayout>
           </ProtectedRoute>
         } />

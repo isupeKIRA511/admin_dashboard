@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, WalletCards, Building2, Car, Loader2 } from 'lucide-react';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../lib/apiClient';
 
 export const OverviewCards: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);

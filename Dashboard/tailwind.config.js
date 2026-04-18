@@ -13,16 +13,21 @@ export default {
         background: '#ffffff', // User's white
         foreground: '#1D1B1C', // Match User's secondary dark
         surface: '#ffffff',
-        primary: '#FAC445', // User's yellow
-        secondary: '#1D1B1C', // User's dark
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
+        },
         danger: '#ef4444',
         success: '#22c55e',
-        muted: '#f5f5f5', // slate-100
-        'muted-foreground': '#737373', // slate-500
-        border: '#e5e5e5', // slate-200
-        input: '#e5e5e5', // slate-200
-        ring: '#1D1B1C', // dark
-        // Override standard colors to apply theme globally
+        muted: '#f5f5f5', 
+        'muted-foreground': '#737373', 
+        border: '#e5e5e5', 
+        input: '#e5e5e5', 
+        ring: '#1D1B1C', 
         slate: {
           50: '#fcfcfc',
           100: '#f5f5f5',
@@ -32,7 +37,7 @@ export default {
           500: '#737373',
           600: '#525252',
           700: '#404040',
-          800: '#1D1B1C', // Important: User's secondary dark color becomes slate-800 to match typical text styles
+          800: '#1D1B1C', 
           900: '#111011',
           950: '#000000',
         },
@@ -42,7 +47,7 @@ export default {
           200: '#fce3a4',
           300: '#fcd06a',
           400: '#fbc54b',
-          500: '#FAC445', // Replace standard indigo 500 with user's yellow
+          500: '#FAC445', 
           600: '#e0af38',
           700: '#b88d25',
           800: '#946f15',

@@ -2,6 +2,9 @@ import type { AuthResponse } from '../types/admin';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://aqaariq.com/marketplace/api';
 
+/**
+ * Generic API fetcher with authentication and error handling
+ */
 export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any): Promise<T> {
     const token = sessionStorage.getItem('token');
 
@@ -9,7 +12,7 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
         'Content-Type': 'application/json',
     };
 
-    // Do not add token for login
+    // Add Authorization header if token exists and it's not a login request
     if (token && !endpoint.includes('/auth/admin/login')) {
         headers['Authorization'] = `Bearer ${token}`;
     }
@@ -23,27 +26,39 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
         config.body = JSON.stringify(body);
     }
 
-    const response = await fetch(`${API_BASE}${endpoint}`, config);
-
-    // We try to parse the result.
-    let data;
     try {
-        data = await response.json();
-    } catch (e) {
-        // Sometimes backend might return empty body on DELETE or 200 without JSON
-        if (response.ok) {
-            return { success: true } as any;
+        const response = await fetch(`${API_BASE}${endpoint}`, config);
+
+        // Handle unauthorized (expired token)
+        if (response.status === 401 && !endpoint.includes('/auth/admin/login')) {
+            sessionStorage.removeItem('token');
+            window.location.href = '/login';
+            throw new Error('جلسة العمل انتهت، يرجى تسجيل الدخول مرة أخرى');
         }
-    }
 
-    if (!response.ok) {
-        const message = data?.message || `خطأ بالاتصال: ${response.status}`;
-        throw new Error(message);
-    }
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            // Empty response or non-JSON
+            if (response.ok) return { success: true } as any;
+        }
 
-    return data as T;
+        if (!response.ok) {
+            const message = data?.message || `خطأ بالاتصال: ${response.status}`;
+            throw new Error(message);
+        }
+
+        return data as T;
+    } catch (error: any) {
+        console.error(`API Error: ${endpoint}`, error);
+        throw error;
+    }
 }
 
+/**
+ * specialized login function
+ */
 export const adminLogin = async (phoneNumber: string, password: string): Promise<AuthResponse> => {
     return fetchApi<AuthResponse>('/auth/admin/login', 'POST', { phoneNumber, password });
 };

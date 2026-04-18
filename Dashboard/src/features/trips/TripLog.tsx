@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Plane, Search, Calendar, Filter, Loader2 } from 'lucide-react';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../lib/apiClient';
 
 export const TripLog: React.FC = () => {
   const [trips, setTrips] = useState<any[]>([]);

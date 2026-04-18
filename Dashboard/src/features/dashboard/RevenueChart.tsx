@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Loader2 } from 'lucide-react';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../lib/apiClient';
 
 export const RevenueChart: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
@@ -43,8 +43,8 @@ export const RevenueChart: React.FC = () => {
             >
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#FAC445" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#FAC445" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -54,7 +54,7 @@ export const RevenueChart: React.FC = () => {
                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
                 itemStyle={{ color: '#1e293b', fontSize: '14px', fontWeight: 500 }}
               />
-              <Area type="monotone" dataKey="revenue" stroke="#4f46e5" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={3} />
+              <Area type="monotone" dataKey="revenue" stroke="#FAC445" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={3} />
             </AreaChart>
           </ResponsiveContainer>
         ) : (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, Landmark, Receipt, Download, Calendar, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { fetchApi } from '../../lib/api';
+import { fetchApi } from '../../lib/apiClient';
 
 export const FinancialSettlement: React.FC = () => {
   const [trips, setTrips] = useState<any[]>([]);

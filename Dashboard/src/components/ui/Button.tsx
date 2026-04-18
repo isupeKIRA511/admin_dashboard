@@ -8,12 +8,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-semibold",
+        primary: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm font-bold",
         secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200 shadow-sm",
         outline: "border border-slate-300 bg-transparent hover:bg-slate-50 text-slate-700",
         ghost: "bg-transparent hover:bg-slate-100 text-slate-700",
         danger: "bg-rose-600 text-white hover:bg-rose-700 shadow-sm",
-        default: "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-semibold", // fallback
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm font-bold", // fallback
       },
       size: {
         sm: "h-8 px-3 text-xs",

@@ -11,7 +11,7 @@ import {
   ChevronRight,
   Monitor
 } from 'lucide-react';
-import { fetchApi } from '../lib/api';
+import { fetchApi } from '../lib/apiClient';
 
 export const VehiclesPage: React.FC = () => {
   
@@ -60,7 +60,7 @@ export const VehiclesPage: React.FC = () => {
         {fleets.length > 0 ? (
           fleets.map((group, gIdx) => (
             <div key={gIdx} className="space-y-6">
-              <div className="border-l-4 border-indigo-500 pl-4 py-1">
+              <div className="border-l-4 border-primary pl-4 py-1">
                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                   {group.company}
                   <ChevronRight className="h-4 w-4 text-slate-300" />
@@ -82,7 +82,7 @@ export const VehiclesPage: React.FC = () => {
                         <Badge variant={v.status === 'active' ? 'success' : 'danger'}>
                           {v.status ? v.status.toUpperCase() : 'UNKNOWN'}
                         </Badge>
-                        <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                        <div className="h-10 w-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                           <IconComponent className="h-5 w-5" />
                         </div>
                       </div>
