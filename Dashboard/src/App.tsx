@@ -11,7 +11,6 @@ const CompaniesPage = lazy(() => import('./pages/CompaniesPage').then(m => ({ de
 const DriversPage = lazy(() => import('./pages/DriversPage').then(m => ({ default: m.DriversPage })));
 const CustomersPage = lazy(() => import('./pages/CustomersPage').then(m => ({ default: m.CustomersPage })));
 const VehiclesPage = lazy(() => import('./pages/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
-const TripsPage = lazy(() => import('./pages/TripsPage').then(m => ({ default: m.TripsPage })));
 const SettlementsPage = lazy(() => import('./pages/SettlementsPage').then(m => ({ default: m.SettlementsPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 
@@ -45,7 +44,6 @@ function App() {
                   <Route path="/drivers" element={<DriversPage />} />
                   <Route path="/customers" element={<CustomersPage />} />
                   <Route path="/vehicles" element={<VehiclesPage />} />
-                  <Route path="/trips" element={<TripsPage />} />
                   <Route path="/settlements" element={<SettlementsPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Routes>

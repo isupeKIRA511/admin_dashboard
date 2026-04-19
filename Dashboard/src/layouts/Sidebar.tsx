@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Building2,
   PlaneTakeoff,
-  Coins,
+  // Coins icon was used for Trips Log which was removed
   Users,
   Car,
   Settings
@@ -17,7 +17,6 @@ export const Sidebar: React.FC = () => {
     { name: 'Drivers', path: '/drivers', icon: Car },
     { name: 'Companies', path: '/companies', icon: Building2 },
     { name: 'Vehicles', path: '/vehicles', icon: Car },
-    { name: 'Trips Log', path: '/trips', icon: Coins },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
