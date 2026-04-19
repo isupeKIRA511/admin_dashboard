@@ -1,7 +1,9 @@
 import type { AuthResponse } from '../types/admin';
 
 const rawApiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim();
-const API_BASE = rawApiBase && rawApiBase !== '/' ? rawApiBase.replace(/\/$/, '') : '/api';
+// Default to the production API base if the env var is not provided.
+// This ensures the client targets the correct backend by default.
+const API_BASE = rawApiBase && rawApiBase !== '/' ? rawApiBase.replace(/\/$/, '') : 'https://aqaariq.com/marketplace/api/v1';
 
 /**
  * Generic API fetcher with authentication and error handling
