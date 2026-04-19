@@ -38,7 +38,9 @@ export const getDriversByCompany = (companyId: string, query: PaginationQuery) =
     pageSize: query.pageSize.toString(),
   });
   if (query.term) params.append('term', query.term);
-  return fetchApi<ApiGetManyResponse<DriverModel>>(`/ByCompany/${companyId}?${params}`);
+  // Backend exposes drivers by company under the Driver controller: /Driver/ByCompany/{companyId}
+  // previous implementation omitted the 'Driver' prefix which produced 404 on the server.
+  return fetchApi<ApiGetManyResponse<DriverModel>>(`/Driver/ByCompany/${companyId}?${params}`);
 };
 export const createDriver = (data: Partial<DriverModel>) => fetchApi<ApiGetOneResponse<DriverModel>>(`/Driver`, 'POST', data);
 export const updateDriver = (id: string, data: Partial<DriverModel>) => fetchApi<ApiStatusResponse>(`/Driver/${id}`, 'PUT', data);
