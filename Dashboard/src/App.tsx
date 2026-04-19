@@ -8,7 +8,6 @@ import DriverRegisterPage from './pages/DriverRegisterPage';
 // Lazy-load pages to reduce initial bundle size
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const CompaniesPage = lazy(() => import('./pages/CompaniesPage').then(m => ({ default: m.CompaniesPage })));
-const DriversPage = lazy(() => import('./pages/DriversPage').then(m => ({ default: m.DriversPage })));
 const CustomersPage = lazy(() => import('./pages/CustomersPage').then(m => ({ default: m.CustomersPage })));
 const VehiclesPage = lazy(() => import('./pages/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
 const SettlementsPage = lazy(() => import('./pages/SettlementsPage').then(m => ({ default: m.SettlementsPage })));
@@ -41,7 +40,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/companies" element={<CompaniesPage />} />
-                  <Route path="/drivers" element={<DriversPage />} />
+                  {/* Drivers page removed */}
                   <Route path="/customers" element={<CustomersPage />} />
                   <Route path="/vehicles" element={<VehiclesPage />} />
                   <Route path="/settlements" element={<SettlementsPage />} />

@@ -71,8 +71,9 @@ export const DriverRegisterPage: React.FC = () => {
             // Reset form
             setForm({ name: '', phoneNumber: '', companyId: '', carModel: '', carBrand: '', carLicensePlate: '' });
 
-            // Go back to drivers list and ensure it filters by companyId so the new driver appears
-            navigate(`/drivers?companyId=${encodeURIComponent(payload.companyId || '')}`);
+            // Drivers page was removed — navigate to the dashboard root instead
+            // If you'd prefer a different target (companies page or company details), change this path.
+            navigate(`/`);
         } catch (err: any) {
             console.error('Register driver failed', err);
             addToast(err?.message || 'Failed to register driver', 'error');

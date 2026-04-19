@@ -14,7 +14,6 @@ export const Sidebar: React.FC = () => {
   const links = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Customers', path: '/customers', icon: Users },
-    { name: 'Drivers', path: '/drivers', icon: Car },
     { name: 'Companies', path: '/companies', icon: Building2 },
     { name: 'Vehicles', path: '/vehicles', icon: Car },
     { name: 'Settings', path: '/settings', icon: Settings },
