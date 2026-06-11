@@ -116,7 +116,7 @@ export const CustomerList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         {isDeleted ? (
-                          <Badge variant="danger">Deleted</Badge>
+                          <Badge variant="success">Active</Badge>
                         ) : (
                           <Badge variant="success">Active</Badge>
                         )}

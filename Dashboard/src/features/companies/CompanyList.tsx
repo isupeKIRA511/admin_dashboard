@@ -124,7 +124,7 @@ export const CompanyList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       {company.deletedAt && company.deletedAt !== "0001-01-01T00:00:00Z" ? (
-                        <Badge variant="danger">Deleted</Badge>
+                        <Badge variant="success">Active</Badge>
                       ) : (
                         <Badge variant={company.status ? 'success' : 'warning'}>
                           {company.status ? 'Active' : 'Inactive'}

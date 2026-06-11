@@ -6,8 +6,7 @@ import {
   PlaneTakeoff,
   // Coins icon was used for Trips Log which was removed
   Users,
-  UserRound,
-  Settings
+  UserRound
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -16,7 +15,6 @@ export const Sidebar: React.FC = () => {
     { name: 'Drivers', path: '/drivers', icon: UserRound },
     { name: 'Customers', path: '/customers', icon: Users },
     { name: 'Companies', path: '/companies', icon: Building2 },
-    { name: 'Settings', path: '/settings', icon: Settings },
   ];
 
 

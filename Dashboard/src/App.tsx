@@ -11,7 +11,6 @@ const CompaniesPage = lazy(() => import('./pages/CompaniesPage').then(m => ({ de
 const CustomersPage = lazy(() => import('./pages/CustomersPage').then(m => ({ default: m.CustomersPage })));
 const DriversPage = lazy(() => import('./pages/DriversPage').then(m => ({ default: m.DriversPage })));
 const SettlementsPage = lazy(() => import('./pages/SettlementsPage').then(m => ({ default: m.SettlementsPage })));
-const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-full min-h-[300px]">
@@ -43,7 +42,6 @@ function App() {
                   <Route path="/drivers" element={<DriversPage />} />
                   <Route path="/customers" element={<CustomersPage />} />
                   <Route path="/settlements" element={<SettlementsPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
                 </Routes>
               </Suspense>
             </MainLayout>
