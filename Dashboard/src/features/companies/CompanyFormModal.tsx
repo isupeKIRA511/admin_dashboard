@@ -5,6 +5,7 @@ import { useToastStore } from '../../store/useToastStore';
 import { Building2, Star } from 'lucide-react';
 import type { CompanyModel } from '../../types/admin';
 import { createCompany, updateCompany } from '../../services/adminService';
+import { logError } from '../../lib/logger';
 
 interface CompanyFormModalProps {
   isOpen: boolean;
@@ -62,9 +63,10 @@ export const CompanyFormModal: React.FC<CompanyFormModalProps> = ({ isOpen, onCl
         addToast(`Company ${formData.name} created successfully.`, 'success');
       }
       onClose();
-    } catch (error: any) {
-      console.error(error);
-      addToast(error.message || `Failed to save company`, 'error');
+    } catch (error) {
+      logError('Failed to save company', error);
+      const message = error instanceof Error ? error.message : 'Failed to save company';
+      addToast(message, 'error');
     } finally {
       setIsSubmitting(false);
     }

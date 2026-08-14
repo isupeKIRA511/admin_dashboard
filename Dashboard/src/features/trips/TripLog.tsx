@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Plane, Search, Calendar, Filter, Loader2 } from 'lucide-react';
-import { fetchApi } from '../../lib/apiClient';
+import { getCompanyDirectory, getTrips } from '../../services/dashboardService';
+import type { Company, Trip } from '../../types';
+import { logError } from '../../lib/logger';
 
 export const TripLog: React.FC = () => {
-  const [trips, setTrips] = useState<any[]>([]);
-  const [companies, setCompanies] = useState<any[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [search, setSearch] = useState('');
@@ -13,37 +15,44 @@ export const TripLog: React.FC = () => {
   const [dateFilter, setDateFilter] = useState('');
 
   useEffect(() => {
+    let isActive = true;
     const loadData = async () => {
       try {
         const [tripsData, companiesData] = await Promise.all([
-          fetchApi('/trips'),
-          fetchApi('/companies')
+          getTrips(),
+          getCompanyDirectory()
         ]);
 
+        if (!isActive) return;
         if (tripsData && Array.isArray(tripsData)) setTrips(tripsData);
         if (companiesData && Array.isArray(companiesData)) setCompanies(companiesData);
       } catch (error) {
-        console.error('Failed to fetch trip log data:', error);
+        logError('Failed to fetch trip log data', error);
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
 
-    loadData();
+    void loadData();
+    return () => { isActive = false; };
   }, []);
 
-  const getCompany = (id: string) => companies.find(c => c.id === id);
+  const companiesById = useMemo(() => new Map(companies.map((company) => [company.id, company])), [companies]);
 
-  const filteredTrips = trips.filter(trip => {
-    const flightMatch = trip.flightNumber ? trip.flightNumber.toLowerCase().includes(search.toLowerCase()) : false;
-    const passengerMatch = trip.passengerName ? trip.passengerName.toLowerCase().includes(search.toLowerCase()) : false;
-    const matchSearch = flightMatch || passengerMatch;
+  const filteredTrips = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
 
-    const matchCompany = companyFilter ? trip.companyId === companyFilter : true;
-    const matchDate = dateFilter ? trip.pickupTime && trip.pickupTime.startsWith(dateFilter) : true;
+    return trips.filter(trip => {
+      const flightMatch = normalizedSearch ? trip.flightNumber?.toLowerCase().includes(normalizedSearch) : true;
+      const passengerMatch = normalizedSearch ? trip.passengerName?.toLowerCase().includes(normalizedSearch) : true;
+      const matchSearch = flightMatch || passengerMatch;
 
-    return matchSearch && matchCompany && matchDate;
-  });
+      const matchCompany = companyFilter ? trip.companyId === companyFilter : true;
+      const matchDate = dateFilter ? Boolean(trip.pickupTime?.startsWith(dateFilter)) : true;
+
+      return matchSearch && matchCompany && matchDate;
+    });
+  }, [companyFilter, dateFilter, search, trips]);
 
   return (
     <div className="space-y-6">
@@ -115,11 +124,12 @@ export const TripLog: React.FC = () => {
                 </tr>
               ) : filteredTrips.length > 0 ? (
                 filteredTrips.map((trip) => {
-                  const company = getCompany(trip.companyId);
+                  const company = companiesById.get(trip.companyId);
                   const date = trip.pickupTime ? new Date(trip.pickupTime) : new Date();
+                  const rowKey = trip.id || `${trip.flightNumber}-${trip.pickupTime}-${trip.passengerPhone}`;
 
                   return (
-                    <tr key={trip.id || Math.random()} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={rowKey} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 bg-sky-100 text-sky-600 rounded-lg flex items-center justify-center">

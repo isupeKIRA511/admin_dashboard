@@ -6,7 +6,9 @@ import React from 'react';
 import App from './src/App';
 
 // Mocking window.requestAnimationFrame which Leaflet needs
-(global as any).requestAnimationFrame = (callback: FrameRequestCallback) => setTimeout(callback, 0);
+(globalThis as typeof globalThis & {
+  requestAnimationFrame: (callback: FrameRequestCallback) => ReturnType<typeof setTimeout>;
+}).requestAnimationFrame = (callback: FrameRequestCallback) => setTimeout(callback, 0);
 
 try {
   const html = renderToString(<App />);

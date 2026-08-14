@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, WalletCards, Building2, Car, Loader2 } from 'lucide-react';
-import { fetchApi } from '../../lib/apiClient';
+import { getCompanyDirectory, getTrips } from '../../services/dashboardService';
+import { logError } from '../../lib/logger';
 
 export const OverviewCards: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,11 +13,12 @@ export const OverviewCards: React.FC = () => {
   });
 
   useEffect(() => {
+    let isActive = true;
     const loadStats = async () => {
       try {
         const [tripsData, companiesData] = await Promise.all([
-          fetchApi('/trips'),
-          fetchApi('/companies')
+          getTrips(),
+          getCompanyDirectory()
         ]);
 
         let gmv = 0;
@@ -33,6 +35,7 @@ export const OverviewCards: React.FC = () => {
           activeCompanies = companiesData.filter(c => c.status === 'active').length;
         }
 
+        if (!isActive) return;
         setStatsData({
           totalGmv: gmv,
           totalCommission: gmv * 0.15,
@@ -41,13 +44,14 @@ export const OverviewCards: React.FC = () => {
         });
 
       } catch (error) {
-        console.error('Failed to fetch overview stats:', error);
+        logError('Failed to fetch overview stats', error);
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
 
-    loadStats();
+    void loadStats();
+    return () => { isActive = false; };
   }, []);
 
   const stats = [

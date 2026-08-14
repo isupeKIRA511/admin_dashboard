@@ -1,19 +1,34 @@
-import type { AuthResponse } from '../types/admin';
+import type { ApiGetOneResponse, AuthResponse } from '../types/admin';
+import { logError } from './logger';
 
 const rawApiBase = (import.meta.env.VITE_API_BASE_URL ?? '').trim();
 // Default to the production API base if the env var is not provided.
 // This ensures the client targets the correct backend by default.
 const API_BASE = rawApiBase && rawApiBase !== '/' ? rawApiBase.replace(/\/$/, '') : 'https://aqaariq.com/marketplace/api/v1';
 
+type ApiError = Error & {
+    status?: number;
+    data?: unknown;
+    url?: string;
+};
+
+const isAuthResponseWrapper = (
+    response: AuthResponse | ApiGetOneResponse<AuthResponse>,
+): response is ApiGetOneResponse<AuthResponse> => (
+    typeof response === 'object' && response !== null && 'data' in response
+);
+
 /**
  * Generic API fetcher with authentication and error handling
  */
-export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any): Promise<T> {
+export async function fetchApi<T>(endpoint: string, method = 'GET', body?: unknown): Promise<T> {
     const token = sessionStorage.getItem('token');
+    const isFormData = body instanceof FormData;
 
-    const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-    };
+    const headers: HeadersInit = {};
+
+    // Let the browser add the multipart boundary when files are uploaded.
+    if (!isFormData) headers['Content-Type'] = 'application/json';
 
     // Add Authorization header if token exists and it's not an auth request
     // (OTP and public auth endpoints should be called without an Authorization header)
@@ -28,7 +43,7 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
     };
 
     if (body) {
-        config.body = JSON.stringify(body);
+        config.body = body instanceof FormData ? body : JSON.stringify(body);
     }
 
     try {
@@ -42,18 +57,20 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
             throw new Error('جلسة العمل انتهت، يرجى تسجيل الدخول مرة أخرى');
         }
 
-        let data;
+        let data: unknown;
         try {
             data = await response.json();
-        } catch (e) {
+        } catch {
             // Empty response or non-JSON
-            if (response.ok) return { success: true } as any;
+            if (response.ok) return { success: true } as T;
         }
 
         if (!response.ok) {
             // Include server response body when throwing so callers can inspect validation details
-            const message = data?.message || `خطأ بالاتصال: ${response.status}`;
-            const err: any = new Error(message);
+            const message = typeof data === 'object' && data !== null && 'message' in data
+                ? String(data.message)
+                : `خطأ بالاتصال: ${response.status}`;
+            const err: ApiError = new Error(message);
             err.status = response.status;
             err.data = data;
             err.url = `${API_BASE}${normalizedEndpoint}`;
@@ -61,8 +78,8 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
         }
 
         return data as T;
-    } catch (error: any) {
-        console.error(`API Error: ${endpoint}`, error);
+    } catch (error) {
+        logError(`API Error: ${endpoint}`, error);
         throw error;
     }
 }
@@ -71,5 +88,12 @@ export async function fetchApi<T>(endpoint: string, method = 'GET', body?: any):
  * specialized login function
  */
 export const adminLogin = async (phoneNumber: string, password: string): Promise<AuthResponse> => {
-    return fetchApi<AuthResponse>('/Auth/admin/login', 'POST', { phoneNumber, password });
+    const response = await fetchApi<AuthResponse | ApiGetOneResponse<AuthResponse>>(
+        '/Auth/admin/login',
+        'POST',
+        { PhoneNumber: phoneNumber, Password: password },
+    );
+
+    if (isAuthResponseWrapper(response)) return response.data;
+    return response;
 };

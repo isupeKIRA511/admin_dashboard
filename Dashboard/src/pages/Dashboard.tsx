@@ -3,10 +3,13 @@ import { Download, Calendar } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { OverviewCards } from '../features/dashboard/OverviewCards';
 import { RevenueChart } from '../features/dashboard/RevenueChart';
-import { LiveMap } from '../features/dashboard/LiveMap';
+import { Suspense } from 'react';
+import { lazy } from 'react';
+const LiveMap = lazy(() => import('../features/dashboard/LiveMap').then(m => ({ default: m.LiveMap })));
 import { useToastStore } from '../store/useToastStore';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { logError } from '../lib/logger';
 // ...existing code...
 
 export const Dashboard: React.FC = () => {
@@ -37,7 +40,7 @@ export const Dashboard: React.FC = () => {
       doc.save('transpay-system-report.pdf');
       addToast('Report generated successfully! Check your downloads.', 'success');
     } catch (error) {
-      console.error('PDF Export Error:', error);
+      logError('PDF export failed', error);
       addToast('Failed to generate PDF. Please try again.', 'error');
     }
   };
@@ -102,7 +105,21 @@ export const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <RevenueChart />
-        <LiveMap />
+        <Suspense
+          fallback={
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 h-full">
+              <div className="mb-4">
+                <h2 className="text-lg font-bold text-slate-800 tracking-tight">Real-time Operations Map</h2>
+                <p className="text-sm text-slate-500">Loading map...</p>
+              </div>
+              <div className="h-[400px] w-full rounded-xl overflow-hidden border border-slate-200 flex items-center justify-center text-slate-500 text-sm">
+                Map is unavailable.
+              </div>
+            </div>
+          }
+        >
+          <LiveMap />
+        </Suspense>
       </div>
     </div>
   );

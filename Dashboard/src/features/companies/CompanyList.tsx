@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Plus, MoreVertical, Building2, Loader2, Search, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { Plus, MoreVertical, Building2, Loader2, Search, Trash2 } from 'lucide-react';
+import { PaginationControls } from '../../components/ui/PaginationControls';
 import { CompanyFormModal } from './CompanyFormModal';
 // import { CompanyDetailsDrawer } from './CompanyDetailsDrawer';
 import type { CompanyModel } from '../../types/admin';
 import { getCompanies, deleteCompany } from '../../services/adminService';
+import { useToastStore } from '../../store/useToastStore';
+import { logError } from '../../lib/logger';
+import { isSoftDeleted } from '../../lib/softDelete';
 
 export const CompanyList: React.FC = () => {
   const [companies, setCompanies] = useState<CompanyModel[]>([]);
@@ -13,6 +18,9 @@ export const CompanyList: React.FC = () => {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyModel | null>(null);
+  const [companyToDelete, setCompanyToDelete] = useState<CompanyModel | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const addToast = useToastStore((state) => state.addToast);
 
   // Pagination & Filters
   const [term, setTerm] = useState('');
@@ -20,7 +28,7 @@ export const CompanyList: React.FC = () => {
   const [pageSize,] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
 
-  const fetchCompaniesData = async () => {
+  const fetchCompaniesData = useCallback(async () => {
     setIsLoading(true);
     try {
       const resp = await getCompanies({ pageNum, pageSize, term });
@@ -29,29 +37,33 @@ export const CompanyList: React.FC = () => {
         setTotalCount(resp.totalCount);
       }
     } catch (error) {
-      console.error('Failed to fetch companies:', error);
+      logError('Failed to fetch companies', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pageNum, pageSize, term]);
 
   useEffect(() => {
     fetchCompaniesData();
-  }, [pageNum, pageSize, term]);
+  }, [fetchCompaniesData]);
 
-  const handleDelete = async (companyId: string) => {
-    if (window.confirm("Are you sure you want to delete this company?")) {
-      try {
-        await deleteCompany(companyId);
-        fetchCompaniesData(); // Refresh list
-      } catch (error) {
-        console.error("Failed to delete company", error);
-        alert("Failed to delete company");
-      }
+  const handleDelete = async () => {
+    if (!companyToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteCompany(companyToDelete.id);
+      addToast(`Company ${companyToDelete.name} deleted successfully.`, 'success');
+      setCompanyToDelete(null);
+      fetchCompaniesData(); // Refresh list
+    } catch (error) {
+      logError('Failed to delete company', error);
+      const message = error instanceof Error ? error.message : 'Failed to delete company';
+      addToast(message, 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
     <div className="space-y-6">
@@ -123,8 +135,8 @@ export const CompanyList: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {company.deletedAt && company.deletedAt !== "0001-01-01T00:00:00Z" ? (
-                        <Badge variant="success">Active</Badge>
+                      {isSoftDeleted(company.deletedAt) ? (
+                        <Badge variant="danger">Deleted</Badge>
                       ) : (
                         <Badge variant={company.status ? 'success' : 'warning'}>
                           {company.status ? 'Active' : 'Inactive'}
@@ -142,7 +154,7 @@ export const CompanyList: React.FC = () => {
                         }}>
                           <MoreVertical className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(company.id)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => setCompanyToDelete(company)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -160,36 +172,8 @@ export const CompanyList: React.FC = () => {
           </table>
         </div>
         
-        {/* Pagination Controls */}
         {!isLoading && totalCount > 0 && (
-          <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <span className="text-sm text-slate-500">
-              Showing {(pageNum - 1) * pageSize + 1} to {Math.min(pageNum * pageSize, totalCount)} of {totalCount} entries
-            </span>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8" 
-                disabled={pageNum === 1}
-                onClick={() => setPageNum(p => p - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-slate-700 font-medium px-2">
-                Page {pageNum} of {totalPages}
-              </span>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-8 w-8" 
-                disabled={pageNum === totalPages}
-                onClick={() => setPageNum(p => p + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <PaginationControls pageNum={pageNum} pageSize={pageSize} totalCount={totalCount} onPageChange={setPageNum} />
         )}
       </div>
 
@@ -204,6 +188,15 @@ export const CompanyList: React.FC = () => {
           company={selectedCompany}
         />
       )}
+      <ConfirmDialog
+        isOpen={Boolean(companyToDelete)}
+        title="Delete company"
+        description={`This will remove ${companyToDelete?.name ?? 'this company'} from the dashboard. This action cannot be undone.`}
+        confirmLabel="Delete company"
+        isLoading={isDeleting}
+        onCancel={() => setCompanyToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

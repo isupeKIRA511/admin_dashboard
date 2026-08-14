@@ -1,40 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Wallet, Landmark, Receipt, Download, Calendar, ArrowUpRight, ArrowDownRight, Loader2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { fetchApi } from '../../lib/apiClient';
+import { getTrips } from '../../services/dashboardService';
+import type { Trip } from '../../types';
+import { logError } from '../../lib/logger';
 
 export const FinancialSettlement: React.FC = () => {
-  const [trips, setTrips] = useState<any[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isActive = true;
     const loadSettlements = async () => {
       try {
-        const data = await fetchApi('/trips');
-        if (data && Array.isArray(data)) {
-          const completedTrips = data.filter((t: any) => t.status === 'completed');
+        const data = await getTrips();
+        if (isActive && data && Array.isArray(data)) {
+          const completedTrips = data.filter((t) => t.status === 'completed');
           setTrips(completedTrips);
         }
       } catch (error) {
-        console.error('Failed to fetch settlement data:', error);
+        logError('Failed to fetch settlement data', error);
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
-    loadSettlements();
+    void loadSettlements();
+    return () => { isActive = false; };
   }, []);
 
-  const cashCollected = trips
-    .filter(t => t.paymentMethod === 'cash')
-    .reduce((sum, t) => sum + (t.price || 0), 0);
+  const settlementSummary = useMemo(() => {
+    const cashCollected = trips
+      .filter(t => t.paymentMethod === 'cash')
+      .reduce((sum, t) => sum + (t.price || 0), 0);
 
-  const onlinePaymentsHeld = trips
-    .filter(t => t.paymentMethod === 'online')
-    .reduce((sum, t) => sum + (t.price || 0), 0);
+    const onlinePaymentsHeld = trips
+      .filter(t => t.paymentMethod === 'online')
+      .reduce((sum, t) => sum + (t.price || 0), 0);
 
-  const totalGmv = cashCollected + onlinePaymentsHeld;
-  const platformCommission = totalGmv * 0.15;
-  const netBalance = onlinePaymentsHeld - platformCommission;
+    const totalGmv = cashCollected + onlinePaymentsHeld;
+    const platformCommission = totalGmv * 0.15;
+
+    return {
+      cashCollected,
+      onlinePaymentsHeld,
+      netBalance: onlinePaymentsHeld - platformCommission,
+    };
+  }, [trips]);
+
+  const { cashCollected, onlinePaymentsHeld, netBalance } = settlementSummary;
 
   return (
     <div className="space-y-6">
@@ -121,8 +134,9 @@ export const FinancialSettlement: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {trips.length > 0 ? trips.slice(0, 5).map(trip => {
                     const comm = (trip.price || 0) * 0.15;
+                    const rowKey = trip.id || `${trip.pickupTime}-${trip.driverName}-${trip.price}`;
                     return (
-                      <tr key={trip.id || Math.random()} className="hover:bg-slate-50/50 transition-colors">
+                      <tr key={rowKey} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4 font-medium text-slate-700">
                           #{trip.id ? trip.id.toString().slice(0, 6).toUpperCase() : 'N/A'}
                         </td>

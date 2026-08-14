@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { Loader2, Search, ChevronLeft, ChevronRight, ChevronDown, Trash2, Building2, Plus } from 'lucide-react';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { Loader2, Search, ChevronDown, Trash2, Building2, Plus } from 'lucide-react';
+import { PaginationControls } from '../../components/ui/PaginationControls';
 import { useNavigate } from 'react-router-dom';
 import type { DriverModel, CompanyModel } from '../../types/admin';
 import { getDriversByCompany, deleteDriver, getCompanies } from '../../services/adminService';
+import { useToastStore } from '../../store/useToastStore';
+import { logError } from '../../lib/logger';
+import { isSoftDeleted } from '../../lib/softDelete';
 
 export const DriverList: React.FC = () => {
   const [companies, setCompanies] = useState<CompanyModel[]>([]);
@@ -13,6 +18,9 @@ export const DriverList: React.FC = () => {
   const [drivers, setDrivers] = useState<DriverModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(true);
+  const [driverToDelete, setDriverToDelete] = useState<DriverModel | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const addToast = useToastStore((state) => state.addToast);
 
   // Pagination & Filters
   const [term, setTerm] = useState('');
@@ -37,14 +45,14 @@ export const DriverList: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error('Failed to load companies:', error);
+        logError('Failed to load companies', error);
       } finally {
         setIsLoadingCompanies(false);
       }
     };
     loadCompanies();
   }, []);
-  const fetchDriversData = async () => {
+  const fetchDriversData = useCallback(async () => {
     if (!selectedCompanyId) return;
 
     setIsLoading(true);
@@ -55,11 +63,11 @@ export const DriverList: React.FC = () => {
         setTotalCount(resp.totalCount);
       }
     } catch (error) {
-      console.error('Failed to fetch drivers:', error);
+      logError('Failed to fetch drivers', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pageNum, pageSize, selectedCompanyId, term]);
 
   useEffect(() => {
     if (selectedCompanyId) {
@@ -68,21 +76,26 @@ export const DriverList: React.FC = () => {
       setDrivers([]);
       setTotalCount(0);
     }
-  }, [pageNum, pageSize, term, selectedCompanyId]);
+  }, [fetchDriversData, selectedCompanyId]);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this driver?')) {
-      try {
-        await deleteDriver(id);
-        fetchDriversData();
-      } catch (error) {
-        console.error('Failed to delete driver', error);
-        alert('Failed to delete driver');
-      }
+  const handleDelete = async () => {
+    if (!driverToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteDriver(driverToDelete.id);
+      addToast(`Driver ${driverToDelete.name} deleted successfully.`, 'success');
+      setDriverToDelete(null);
+      fetchDriversData();
+    } catch (error) {
+      logError('Failed to delete driver', error);
+      const message = error instanceof Error ? error.message : 'Failed to delete driver';
+      addToast(message, 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const navigate = useNavigate();
 
   return (
@@ -182,7 +195,7 @@ export const DriverList: React.FC = () => {
                 </tr>
               ) : drivers && drivers.length > 0 ? (
                 drivers.map((driver) => {
-                  const isDeleted = driver.deletedAt !== null && driver.deletedAt !== "0001-01-01T00:00:00Z";
+                  const isDeleted = isSoftDeleted(driver.deletedAt);
                   return (
                     <tr key={driver.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-6 py-4">
@@ -220,7 +233,7 @@ export const DriverList: React.FC = () => {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           {!isDeleted && (
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(driver.id)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => setDriverToDelete(driver)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
@@ -240,38 +253,19 @@ export const DriverList: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {!isLoading && totalCount > 0 && selectedCompanyId && (
-          <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <span className="text-sm text-slate-500">
-              Showing {(pageNum - 1) * pageSize + 1} to {Math.min(pageNum * pageSize, totalCount)} of {totalCount} entries
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={pageNum === 1}
-                onClick={() => setPageNum(p => p - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-slate-700 font-medium px-2">
-                Page {pageNum} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={pageNum === totalPages}
-                onClick={() => setPageNum(p => p + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <PaginationControls pageNum={pageNum} pageSize={pageSize} totalCount={totalCount} onPageChange={setPageNum} />
         )}
       </div>
+      <ConfirmDialog
+        isOpen={Boolean(driverToDelete)}
+        title="Delete driver"
+        description={`This will remove ${driverToDelete?.name ?? 'this driver'} from the dashboard. This action cannot be undone.`}
+        confirmLabel="Delete driver"
+        isLoading={isDeleting}
+        onCancel={() => setDriverToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { User, Loader2, Search, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { User, Loader2, Search, Trash2 } from 'lucide-react';
+import { PaginationControls } from '../../components/ui/PaginationControls';
 import type { CustomerModel } from '../../types/admin';
 import { getCustomers, deleteCustomer } from '../../services/adminService';
+import { useToastStore } from '../../store/useToastStore';
+import { logError } from '../../lib/logger';
+import { isSoftDeleted } from '../../lib/softDelete';
 
 export const CustomerList: React.FC = () => {
   const [customers, setCustomers] = useState<CustomerModel[]>([]);
@@ -14,8 +19,11 @@ export const CustomerList: React.FC = () => {
   const [pageNum, setPageNum] = useState(1);
   const [pageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
+  const [customerToDelete, setCustomerToDelete] = useState<CustomerModel | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const addToast = useToastStore((state) => state.addToast);
 
-  const fetchCustomersData = async () => {
+  const fetchCustomersData = useCallback(async () => {
     setIsLoading(true);
     try {
       const resp = await getCustomers({ pageNum, pageSize, term });
@@ -24,29 +32,33 @@ export const CustomerList: React.FC = () => {
         setTotalCount(resp.totalCount);
       }
     } catch (error) {
-      console.error('Failed to fetch customers:', error);
+      logError('Failed to fetch customers', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pageNum, pageSize, term]);
 
   useEffect(() => {
     fetchCustomersData();
-  }, [pageNum, pageSize, term]);
+  }, [fetchCustomersData]);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm(`Are you sure you want to delete this customer?`)) {
-      try {
-        await deleteCustomer(id);
-        fetchCustomersData();
-      } catch (error) {
-        console.error(`Failed to delete customer`, error);
-        alert(`Failed to delete customer`);
-      }
+  const handleDelete = async () => {
+    if (!customerToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteCustomer(customerToDelete.id);
+      addToast(`Customer ${customerToDelete.fullName || customerToDelete.phoneNumber} deleted successfully.`, 'success');
+      setCustomerToDelete(null);
+      fetchCustomersData();
+    } catch (error) {
+      logError('Failed to delete customer', error);
+      const message = error instanceof Error ? error.message : 'Failed to delete customer';
+      addToast(message, 'error');
+    } finally {
+      setIsDeleting(false);
     }
   };
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   return (
     <div className="space-y-6">
@@ -95,7 +107,7 @@ export const CustomerList: React.FC = () => {
                 </tr>
               ) : customers.length > 0 ? (
                 customers.map((customer) => {
-                  const isDeleted = customer.deletedAt !== null && customer.deletedAt !== "0001-01-01T00:00:00Z";
+                  const isDeleted = isSoftDeleted(customer.deletedAt);
                   return (
                     <tr key={customer.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-6 py-4">
@@ -116,7 +128,7 @@ export const CustomerList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4">
                         {isDeleted ? (
-                          <Badge variant="success">Active</Badge>
+                          <Badge variant="danger">Deleted</Badge>
                         ) : (
                           <Badge variant="success">Active</Badge>
                         )}
@@ -127,7 +139,7 @@ export const CustomerList: React.FC = () => {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           {!isDeleted && (
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDelete(customer.id)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => setCustomerToDelete(customer)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
@@ -147,38 +159,19 @@ export const CustomerList: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {!isLoading && totalCount > 0 && (
-          <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <span className="text-sm text-slate-500">
-              Showing {(pageNum - 1) * pageSize + 1} to {Math.min(pageNum * pageSize, totalCount)} of {totalCount} entries
-            </span>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={pageNum === 1}
-                onClick={() => setPageNum(p => p - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-slate-700 font-medium px-2">
-                Page {pageNum} of {totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                disabled={pageNum === totalPages}
-                onClick={() => setPageNum(p => p + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <PaginationControls pageNum={pageNum} pageSize={pageSize} totalCount={totalCount} onPageChange={setPageNum} />
         )}
       </div>
+      <ConfirmDialog
+        isOpen={Boolean(customerToDelete)}
+        title="Delete customer"
+        description={`This will remove ${customerToDelete?.fullName || customerToDelete?.phoneNumber || 'this customer'} from the dashboard. This action cannot be undone.`}
+        confirmLabel="Delete customer"
+        isLoading={isDeleting}
+        onCancel={() => setCustomerToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };

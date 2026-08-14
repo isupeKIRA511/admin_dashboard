@@ -14,14 +14,13 @@ const customIcon = new Icon({
 // A dummy list of driver locations around a central point (Airport)
 const driverLocations = [
   { id: 1, lat: 24.726214, lng: 46.626772, name: 'Ahmed', status: 'Available' },
-  { id: 2, lat: 24.717140, lng: 46.611107, name: 'Mohammed', status: 'On Trip' },
+  { id: 2, lat: 24.71714, lng: 46.611107, name: 'Mohammed', status: 'On Trip' },
   { id: 3, lat: 24.733596, lng: 46.643209, name: 'Ali', status: 'Available' },
   { id: 4, lat: 24.711848, lng: 46.634626, name: 'Omar', status: 'On Trip' },
-  { id: 5, lat: 24.743120, lng: 46.617889, name: 'Khaled', status: 'Available' },
+  { id: 5, lat: 24.74312, lng: 46.617889, name: 'Khaled', status: 'Available' },
 ];
 
 export const LiveMap: React.FC = () => {
-  // Center map on Riyadh as an example airport location
   const centerPosition: [number, number] = [24.7136, 46.6753];
 
   return (
@@ -42,7 +41,10 @@ export const LiveMap: React.FC = () => {
                 <div className="p-1">
                   <p className="font-bold text-slate-800">{driver.name}</p>
                   <p className="text-xs text-slate-500">
-                    Status: <span className={driver.status === 'Available' ? 'text-emerald-500' : 'text-amber-500'}>{driver.status}</span>
+                    Status:{' '}
+                    <span className={driver.status === 'Available' ? 'text-emerald-500' : 'text-amber-500'}>
+                      {driver.status}
+                    </span>
                   </p>
                 </div>
               </Popup>

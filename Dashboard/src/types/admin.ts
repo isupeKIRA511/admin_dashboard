@@ -85,3 +85,48 @@ export interface DriverRegisterRequest {
   carBrand?: string;
   carLicensePlate?: string;
 }
+
+export interface DriverRegistrationForm extends DriverRegisterRequest {
+  identityFrontImage: File | null;
+  identityBackImage: File | null;
+  vehicleRegistrationImage: File | null;
+  vehicleImages: File[];
+}
+
+export type BookingStatus = 'Pending' | 'Confirmed' | 'Cancelled' | 'Completed';
+
+export interface BookingResponse {
+  id: string;
+  pickup: string;
+  dropoff: string;
+  latitude: number;
+  longitude: number;
+  maxPassengers: number;
+  homeToAirport: boolean;
+  status: BookingStatus;
+  customerId: string;
+  customerName: string;
+  companyId: string;
+  companyName: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBookingRequest {
+  pickup: string;
+  dropoff: string;
+  latitude: number;
+  longitude: number;
+  maxPassengers: number;
+  homeToAirport: boolean;
+  companyId: string;
+}
+
+export interface AdminBookingQuery {
+  companyId?: string;
+  customerId?: string;
+  status?: BookingStatus;
+  page: number;
+  pageSize: number;
+}
+

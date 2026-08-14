@@ -10,10 +10,16 @@ import {
   Layout
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { fetchApi } from '../lib/apiClient';
+import { getSettings, updateSettings, type Settings } from '../services/settingsService';
+import { logError } from '../lib/logger';
+
+type Message = {
+  type: 'success' | 'error' | '';
+  text: string;
+};
 
 export const SettingsPage: React.FC = () => {
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<Settings>({
     platformName: '',
     defaultCommission: 0,
     settlementFrequency: 'weekly',
@@ -22,13 +28,14 @@ export const SettingsPage: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState<Message>({ type: '', text: '' });
 
   useEffect(() => {
+    let isActive = true;
     const loadSettings = async () => {
       try {
-        const data = await fetchApi<any>('/settings');
-        if (data) {
+        const data = await getSettings();
+        if (isActive && data) {
           setSettings({
             platformName: data.platformName || '',
             defaultCommission: data.defaultCommission || 0,
@@ -37,14 +44,15 @@ export const SettingsPage: React.FC = () => {
           });
         }
       } catch (error) {
-        console.error('Failed to fetch settings:', error);
-        setMessage({ type: 'error', text: 'فشل في جلب الإعدادات من الخادم.' });
+        logError('Failed to fetch settings', error);
+        if (isActive) setMessage({ type: 'error', text: 'فشل في جلب الإعدادات من الخادم.' });
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     };
 
-    loadSettings();
+    void loadSettings();
+    return () => { isActive = false; };
   }, []);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -53,11 +61,11 @@ export const SettingsPage: React.FC = () => {
     setMessage({ type: '', text: '' });
 
     try {
-      await fetchApi('/settings', 'PUT', settings);
+      await updateSettings(settings);
       setMessage({ type: 'success', text: 'تم حفظ الإعدادات بنجاح.' });
       setTimeout(() => setMessage({ type: '', text: '' }), 5000);
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      logError('Failed to save settings', error);
       setMessage({ type: 'error', text: 'حدث خطأ أثناء حفظ الإعدادات.' });
     } finally {
       setIsSaving(false);

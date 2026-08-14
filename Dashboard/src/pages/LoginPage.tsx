@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PlaneTakeoff, Lock, Phone, ArrowRight } from 'lucide-react';
 import { adminLogin } from '../lib/apiClient';
+import { logError } from '../lib/logger';
 
 export const LoginPage: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -18,10 +19,10 @@ export const LoginPage: React.FC = () => {
     try {
       const response = await adminLogin(phoneNumber, password);
       sessionStorage.setItem('token', response.token);
-      sessionStorage.setItem('adminPhone', response.phoneNumber);
       window.location.href = '/';
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+    } catch (err) {
+      logError('Admin login failed', err);
+      setError('Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
